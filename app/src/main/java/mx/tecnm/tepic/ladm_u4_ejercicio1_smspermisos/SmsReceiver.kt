@@ -21,18 +21,20 @@ class SmsReceiver : BroadcastReceiver(){
         val extras = intent.extras //SON PARAMETROS DE ENVIO DE ALGO A UN ACTIVITY
         var fecha=""
         if(extras!=null){
-            var sms = extras.get("pdus") as Array<Any> //recupero el sms que entra
-            for(indice in sms.indices){
-                var formato = extras.getString("format")
-                var smsMensaje = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                    SmsMessage.createFromPdu(sms[indice] as ByteArray,formato)
-                }else{
-                    SmsMessage.createFromPdu(sms[indice] as ByteArray)
-                }
-                var celularOrigen = smsMensaje.originatingAddress
-                var contenidoSMS = smsMensaje.messageBody.toString()
-                Toast.makeText(context, "ENTRO CONTENIDO ${celularOrigen}", Toast.LENGTH_LONG).show()
-                try {
+            try {
+                var sms = extras.get("pdus") as Array<Any> //recupero el sms que entra
+                for (indice in sms.indices) {
+                    var formato = extras.getString("format")
+                    var smsMensaje = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        SmsMessage.createFromPdu(sms[indice] as ByteArray, formato)
+                    } else {
+                        SmsMessage.createFromPdu(sms[indice] as ByteArray)
+                    }
+                    var celularOrigen = smsMensaje.originatingAddress
+                    var contenidoSMS = smsMensaje.messageBody.toString()
+                    Toast.makeText(context, "ENTRO CONTENIDO ${celularOrigen}", Toast.LENGTH_LONG)
+                        .show()
+
                     var basedatos = Firebase.database.reference
                     var fechaActual = Instant.now()
                     val mexico = fechaActual.atZone(ZoneId.of("America/Mazatlan")).toString()
@@ -47,9 +49,10 @@ class SmsReceiver : BroadcastReceiver(){
                         .addOnFailureListener {
 
                         }
-                }catch (err:RuntimeException){
 
                 }
+            }catch (err:RuntimeException){
+
             }
         }
     }
