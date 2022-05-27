@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import java.lang.RuntimeException
 import java.time.Instant
 import java.time.ZoneId
 
@@ -31,20 +32,24 @@ class SmsReceiver : BroadcastReceiver(){
                 var celularOrigen = smsMensaje.originatingAddress
                 var contenidoSMS = smsMensaje.messageBody.toString()
                 Toast.makeText(context, "ENTRO CONTENIDO ${celularOrigen}", Toast.LENGTH_LONG).show()
-                var basedatos = Firebase.database.reference
-                var fechaActual= Instant.now()
-                val mexico = fechaActual.atZone(ZoneId.of("America/Mazatlan")).toString()
-                val split = mexico.split(".")
-                fecha=split[0]
-                val datos= Datos(celularOrigen, contenidoSMS, fecha)
+                try {
+                    var basedatos = Firebase.database.reference
+                    var fechaActual = Instant.now()
+                    val mexico = fechaActual.atZone(ZoneId.of("America/Mazatlan")).toString()
+                    val split = mexico.split(".")
+                    fecha = split[0]
+                    val datos = Datos(celularOrigen, contenidoSMS, fecha)
 
-                basedatos.child("sms").push().setValue(datos)
-                    .addOnSuccessListener {
+                    basedatos.child("sms").push().setValue(datos)
+                        .addOnSuccessListener {
 
-                    }
-                    .addOnFailureListener {
+                        }
+                        .addOnFailureListener {
 
-                    }
+                        }
+                }catch (err:RuntimeException){
+
+                }
             }
         }
     }

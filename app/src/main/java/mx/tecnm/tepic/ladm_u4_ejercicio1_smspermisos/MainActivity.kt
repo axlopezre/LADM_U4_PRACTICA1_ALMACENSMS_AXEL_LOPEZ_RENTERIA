@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.RECEIVE_SMS), siPermisoReceiver)
         }
 
-       /* binding.button.setOnClickListener{
+       /*binding.button.setOnClickListener{
             //PARA SOLICITAR EL PERMISO DE QUE SE EJECUTA
             if(ActivityCompat.checkSelfPermission(this, //PREGUNTA SI TIENE OTORGADO UN PERMISO(DENEGADO O OTORGAADO)
                 android.Manifest.permission.SEND_SMS)!= PackageManager.PERMISSION_GRANTED) {
@@ -118,7 +118,6 @@ class MainActivity : AppCompatActivity() {
                         val separador=","
                         cadena2 = cadena.joinToString(separador)
                     }
-                    //Toast.makeText(this, "${cadena2}", Toast.LENGTH_LONG).show()
                     System.out.println(cadena2)
                     archivo.write(cadena2)
                     archivo.flush()
@@ -153,7 +152,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /*private fun envioSMS() {
-        SmsManager.getDefault().sendTextMessage(binding.editTextPhone.text.toString(),null, binding.editTextTextPersonName.text.toString(), null, null)
+        SmsManager.getDefault().sendTextMessage(3113403943.toString(),null, "axel", null, null)
         Toast.makeText(this, "SE ENVIO EL SMS", Toast.LENGTH_LONG)
             .show()
     }*/
