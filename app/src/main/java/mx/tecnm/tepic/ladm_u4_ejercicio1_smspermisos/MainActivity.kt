@@ -17,9 +17,12 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.lang.Exception
+import java.lang.RuntimeException
+import java.lang.reflect.InvocationTargetException
 import java.time.Instant
 import java.time.ZoneId
 import mx.tecnm.tepic.ladm_u4_ejercicio1_smspermisos.databinding.ActivityMainBinding as ActivityMainBinding1
@@ -31,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     var cadena = ArrayList<String>()
     var cadena2=""
     var i=0
+    private var err=""
     var vector = ArrayList<String>()
     var listaIDs = ArrayList<String>()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,6 +81,7 @@ class MainActivity : AppCompatActivity() {
             }
         }*/
         binding.button3.setOnClickListener {
+           try{
             try {
                 val archivo = BufferedReader(InputStreamReader(openFileInput("nomerepruebesbenigno.txt")))
                 var listaContenido = archivo.readLine()//archivo de tipo list
@@ -92,6 +97,9 @@ class MainActivity : AppCompatActivity() {
                 android.app.AlertDialog.Builder(this)
                     .setMessage(e.message).show()
             }
+           }catch (err: RuntimeException){
+               this.err = err.message!!
+           }
         }
         binding.button2.setOnClickListener {
             //--------------lo equivalente al snapshot
@@ -100,6 +108,8 @@ class MainActivity : AppCompatActivity() {
                 val consulta = FirebaseDatabase.getInstance().getReference().child("sms")
                 val postListener = object : ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
+                    try{
+                        try{
                     listaIDs.clear()
                     cadena.clear()
                     for(data in snapshot.children!!){
@@ -118,10 +128,15 @@ class MainActivity : AppCompatActivity() {
                         val separador=","
                         cadena2 = cadena.joinToString(separador)
                     }
-                    System.out.println(cadena2)
                     archivo.write(cadena2)
                     archivo.flush()
                     archivo.close()
+                    }catch (er: InvocationTargetException){
+
+                    }
+                    }catch (er: IOException){
+
+                    }
                 }
                 override fun onCancelled(error: DatabaseError) {
 
@@ -132,6 +147,7 @@ class MainActivity : AppCompatActivity() {
             }catch (e: Exception){
                 androidx.appcompat.app.AlertDialog.Builder(this).setMessage(e.message).show()
             }
+
         }
     }
 

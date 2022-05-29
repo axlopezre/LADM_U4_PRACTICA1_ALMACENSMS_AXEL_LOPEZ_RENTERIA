@@ -17,7 +17,9 @@ import java.time.ZoneId
     RECEIVER = evento o eyente de android que permite la lectura de archivos del sistema operativo
  */
 class SmsReceiver : BroadcastReceiver(){
+    private var err=""
     override fun onReceive(context: Context, intent: Intent) { //EL INTENT TRAE LA DATA DE LO QUE SUCEDIO
+        try{
         val extras = intent.extras //SON PARAMETROS DE ENVIO DE ALGO A UN ACTIVITY
         var fecha=""
         if(extras!=null){
@@ -50,13 +52,16 @@ class SmsReceiver : BroadcastReceiver(){
 
                         }
                     }catch (err:RuntimeException){
-
+                        this.err = err.message!!
                     }
 
                 }
             }catch (err:RuntimeException){
-
+                this.err = err.message!!
             }
+        }
+        }catch (err:RuntimeException){
+            this.err = err.message!!
         }
     }
 }
