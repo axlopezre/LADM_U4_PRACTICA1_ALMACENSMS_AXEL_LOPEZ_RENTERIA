@@ -34,7 +34,7 @@ class SmsReceiver : BroadcastReceiver(){
                     var contenidoSMS = smsMensaje.messageBody.toString()
                     Toast.makeText(context, "ENTRO CONTENIDO ${celularOrigen}", Toast.LENGTH_LONG)
                         .show()
-
+                    try {
                     var basedatos = Firebase.database.reference
                     var fechaActual = Instant.now()
                     val mexico = fechaActual.atZone(ZoneId.of("America/Mazatlan")).toString()
@@ -49,6 +49,9 @@ class SmsReceiver : BroadcastReceiver(){
                         .addOnFailureListener {
 
                         }
+                    }catch (err:RuntimeException){
+
+                    }
 
                 }
             }catch (err:RuntimeException){
