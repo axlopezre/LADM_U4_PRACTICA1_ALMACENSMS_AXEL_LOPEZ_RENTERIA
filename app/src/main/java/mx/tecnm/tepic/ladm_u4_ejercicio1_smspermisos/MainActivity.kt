@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.core.view.size
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -16,10 +17,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
+import java.io.*
 import java.lang.Exception
 import java.lang.RuntimeException
 import java.lang.reflect.InvocationTargetException
@@ -33,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     val siPermisoReceiver = 2
     var cadena = ArrayList<String>()
     var cadena2=""
+    var cadena3=""
     var i=0
     private var err=""
     var vector = ArrayList<String>()
@@ -42,6 +41,27 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding1.inflate(layoutInflater)
         setContentView(binding.root)
         setTitle("ALMACEN SMS")
+        AlertDialog.Builder(this)
+            .setTitle("VENTANA INFORMATIVA")
+            .setMessage("CUANDO SE LE DE CLIC EN DESCARGAR LISTADO SMS AUTOMATICAMENTE SE CREARÁ UN ARCHIVO EXCEL EN LA SIGUIENTE RUTA: SETTINGS->STORAGE->SDCARD->Android->data->mx.tecnm.tepic.ladm_u4_ejercicio1_smspermisos->files->DirectorioSMS->ListaSMS.csv/\n" +
+                    "\nUNA VES QUE PUEDA ABRIR EL ARCHIVO EXCEL DE LA RUTA ESPECIFICADA PODRÁ VISUALIZAR TODOS LOS SMS ENTRANTES QUE SE HAN REGISTRADO EN LA BD REALTIME)" +
+                    "\nPOR ULTIMO EL BOTON DE LEER LISTADO SMS ES PARA VER EN UN MAKETEXT LOS SMS QUE TIENE EL ARCHIVO EXCEL PREVIAMENTE VISUALIZADO.")
+            .show()
+        if(ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),2)
+        }
+        if(ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.MANAGE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                arrayOf(android.Manifest.permission.MANAGE_EXTERNAL_STORAGE),2)
+        }
+        if(ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),2)
+        }
         //--------------lo equivalente al snapshot
         val consulta = FirebaseDatabase.getInstance().getReference().child("sms")
         val postListener = object : ValueEventListener{
@@ -70,28 +90,18 @@ class MainActivity : AppCompatActivity() {
         if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.RECEIVE_SMS)!=PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.RECEIVE_SMS), siPermisoReceiver)
         }
-
-       /*binding.button.setOnClickListener{
-            //PARA SOLICITAR EL PERMISO DE QUE SE EJECUTA
-            if(ActivityCompat.checkSelfPermission(this, //PREGUNTA SI TIENE OTORGADO UN PERMISO(DENEGADO O OTORGAADO)
-                android.Manifest.permission.SEND_SMS)!= PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.SEND_SMS), siPermiso)
-            }else{
-                envioSMS()
-            }
-        }*/
         binding.button3.setOnClickListener {
            try{
             try {
-                val archivo = BufferedReader(InputStreamReader(openFileInput("nomerepruebesbenigno.txt")))
-                var listaContenido = archivo.readLine()//archivo de tipo list
-                var arregloFrases = listaContenido.split(",")
-                var cadenaprueba = ""
-                (0..arregloFrases.size-1).forEach {
-                    cadenaprueba += arregloFrases[it]
-                    vector.add(arregloFrases[it])
+                val archivo = InputStreamReader(openFileInput("nomerepruebesbenigno.csv"))
+                var listaContenido = archivo.readLines()
+
+
+                var cadena2 = ""
+                (0.. listaContenido.size-1).forEach {
+                    cadena2 = cadena2 + listaContenido.get(it)
                 }
-                Toast.makeText(this, "${listaContenido}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "${cadena2}", Toast.LENGTH_LONG).show()
 
             }catch (e: Exception){
                 android.app.AlertDialog.Builder(this)
@@ -104,45 +114,47 @@ class MainActivity : AppCompatActivity() {
         binding.button2.setOnClickListener {
             //--------------lo equivalente al snapshot
             try {
-                val archivo = OutputStreamWriter(openFileOutput("nomerepruebesbenigno.txt", MODE_PRIVATE))
-                val consulta = FirebaseDatabase.getInstance().getReference().child("sms")
-                val postListener = object : ValueEventListener{
-                override fun onDataChange(snapshot: DataSnapshot) {
+                val path = this.getExternalFilesDir(null)
+
+                val letDirectory = File(path, "DirectorioSMS")
+                letDirectory.mkdirs()
+
+                val file = File(letDirectory, "ListaSMS.csv")
+
+                if(file.exists()){
+                    file.delete()
+                }else{
+                    File(letDirectory, "ListaSMS.csv")
+                }
+
+                val archivo = OutputStreamWriter(openFileOutput("nomerepruebesbenigno.csv", MODE_PRIVATE))
                     try{
                         try{
-                    listaIDs.clear()
-                    cadena.clear()
-                    for(data in snapshot.children!!){
-                        i++
-                        val id = data.key
-                        listaIDs.add(id!!)
-                        val telefono = data.getValue<Datos>()!!.telefono
-                        val mensaje = data.getValue<Datos>()!!.mensaje
-                        val fechahora = data.getValue<Datos>()!!.fechahora
-                        cadena.add("Teléfono: ${telefono} Mensaje: ${mensaje} Fecha y Hora: ${fechahora}")
-                    }
-                    if(i==snapshot.children.count()-1){
-                        val separador=" "
-                        cadena2 = cadena.joinToString(separador)
-                    }else{
-                        val separador=","
-                        cadena2 = cadena.joinToString(separador)
-                    }
-                    archivo.write(cadena2)
-                    archivo.flush()
-                    archivo.close()
+                            (0.. binding.lista.size-1).forEach {
+                                cadena2 = cadena2 + binding.lista.getItemAtPosition(it).toString()+",\n"
+                            }
+                            cadena2.replace("\n","")
+                            archivo.write(cadena2)
+                            archivo.flush()
+                            archivo.close()
+                            android.app.AlertDialog.Builder(this)
+                                .setMessage("SE GUARDARON LOS DATOS(EXCEL)").show()
+
+                            var cadena3 = ""
+                            (0.. binding.lista.size-1).forEach {
+                                cadena3 = cadena3 + binding.lista.getItemAtPosition(it).toString()+",\n"
+                            }
+                            cadena3.replace("\n","")
+
+                            file.appendText(cadena3)
+
+
                     }catch (er: InvocationTargetException){
 
                     }
                     }catch (er: IOException){
 
                     }
-                }
-                override fun onCancelled(error: DatabaseError) {
-
-                }
-            }
-            consulta.addValueEventListener(postListener)//equivalente a un start
             //-------------
             }catch (e: Exception){
                 androidx.appcompat.app.AlertDialog.Builder(this).setMessage(e.message).show()
@@ -167,11 +179,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /*private fun envioSMS() {
-        SmsManager.getDefault().sendTextMessage(3113403943.toString(),null, "axel", null, null)
-        Toast.makeText(this, "SE ENVIO EL SMS", Toast.LENGTH_LONG)
-            .show()
-    }*/
     fun mostrarLista(datos: ArrayList<String>) {
         binding.lista.adapter = ArrayAdapter<String>(this, R.layout.simple_list_item_1, datos)
     }
