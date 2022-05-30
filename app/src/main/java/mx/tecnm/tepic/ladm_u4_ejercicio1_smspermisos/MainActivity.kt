@@ -1,6 +1,7 @@
 package mx.tecnm.tepic.ladm_u4_ejercicio1_smspermisos
 
 import android.R
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -29,9 +30,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding1
     val siPermiso = 1
     val siPermisoReceiver = 2
-    var cadena = ArrayList<String>()
     var cadena2=""
-    var cadena3=""
+    var cadena3 = ""
     var i=0
     private var err=""
     var vector = ArrayList<String>()
@@ -41,10 +41,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding1.inflate(layoutInflater)
         setContentView(binding.root)
         setTitle("ALMACEN SMS")
+        binding.lista.setOnItemClickListener { adapterView, view, indice, l ->
+            cadena2 = cadena2 + binding.lista.getItemAtPosition(indice)
+                .toString() + ",\n"
+            cadena3 = cadena3 + binding.lista.getItemAtPosition(indice).toString()+",\n"
+            Toast.makeText(this, "SE HA SELECCIONADO: ${binding.lista.getItemAtPosition(indice)}", Toast.LENGTH_LONG).show()
+        }
         AlertDialog.Builder(this)
             .setTitle("VENTANA INFORMATIVA")
-            .setMessage("CUANDO SE LE DE CLIC EN DESCARGAR LISTADO SMS AUTOMATICAMENTE SE CREARÁ UN ARCHIVO EXCEL EN LA SIGUIENTE RUTA(TOMAR EN CUENTA QUE ES NECESARIO DARLE CLIC EN LOS 3 PUNTITOS DE ARRIBA Y ACTIVAR SHOW INTERNAL STORAGE): SETTINGS->STORAGE->SDCARD->Android->data->mx.tecnm.tepic.ladm_u4_ejercicio1_smspermisos->files->DirectorioSMS->ListaSMS.csv/\n" +
-                    "\nUNA VES QUE PUEDA CREAR EL ARCHIVO EXCEL DE LA RUTA ESPECIFICADA PODRÁ VISUALIZAR TODOS LOS SMS ENTRANTES QUE SE HAN REGISTRADO EN LA BD REALTIME)" +
+            .setMessage("PARA SELECCIONAR LOS SMS QUE DESEAS AGREGAR AL ARCHIVO EXCEL ES NECESARIO DARLE CLIC AL ITEM DE LA LISTA Y SE AGREGARÁN AUTOMATICAMENTE\n" +
+                    "\n DESPUES DE SELECCIONAR LOS SMS DANDOLE CLIC, AHORA ES CUANDO SE LE DA EL CLIC EN DESCARGAR LISTADO SMS Y AUTOMATICAMENTE SE CREARÁ UN ARCHIVO EXCEL EN LA SIGUIENTE RUTA(TOMAR EN CUENTA QUE ES NECESARIO DARLE CLIC EN LOS 3 PUNTITOS DE ARRIBA Y ACTIVAR SHOW INTERNAL STORAGE): SETTINGS->STORAGE->Internal shared storage->Files->Android->data->mx.tecnm.tepic.ladm_u4_ejercicio1_smspermisos->files->DirectorioSMS->ListaSMS.csv/\n)" +
                     "\nPOR ULTIMO EL BOTON DE LEER LISTADO SMS ES PARA VER EN UN MAKETEXT LOS SMS QUE TIENE EL ARCHIVO EXCEL PREVIAMENTE CREADO.")
             .show()
         if(ActivityCompat.checkSelfPermission(this,
@@ -84,8 +90,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         consulta.addValueEventListener(postListener)//equivalente a un start
-        //-------------
-
 
         if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.RECEIVE_SMS)!=PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.RECEIVE_SMS), siPermisoReceiver)
@@ -95,8 +99,6 @@ class MainActivity : AppCompatActivity() {
             try {
                 val archivo = InputStreamReader(openFileInput("nomerepruebesbenigno.csv"))
                 var listaContenido = archivo.readLines()
-
-
                 var cadena2 = ""
                 (0.. listaContenido.size-1).forEach {
                     cadena2 = cadena2 + listaContenido.get(it)
@@ -126,36 +128,24 @@ class MainActivity : AppCompatActivity() {
                 }else{
                     File(letDirectory, "ListaSMS.csv")
                 }
-
                 val archivo = OutputStreamWriter(openFileOutput("nomerepruebesbenigno.csv", MODE_PRIVATE))
                     try{
                         try{
-                            (0.. binding.lista.size-1).forEach {
-                                cadena2 = cadena2 + binding.lista.getItemAtPosition(it).toString()+",\n"
-                            }
                             cadena2.replace("\n","")
                             archivo.write(cadena2)
                             archivo.flush()
                             archivo.close()
                             android.app.AlertDialog.Builder(this)
                                 .setMessage("SE GUARDARON LOS DATOS(EXCEL)").show()
-
-                            var cadena3 = ""
-                            (0.. binding.lista.size-1).forEach {
-                                cadena3 = cadena3 + binding.lista.getItemAtPosition(it).toString()+",\n"
-                            }
                             cadena3.replace("\n","")
 
                             file.appendText(cadena3)
-
-
                     }catch (er: InvocationTargetException){
 
                     }
                     }catch (er: IOException){
 
                     }
-            //-------------
             }catch (e: Exception){
                 androidx.appcompat.app.AlertDialog.Builder(this).setMessage(e.message).show()
             }
